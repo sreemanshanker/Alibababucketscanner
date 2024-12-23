@@ -13,14 +13,14 @@ credentials = [
 ]
 
 # List of buckets to exclude from the results
-excluded_buckets = ["<bucketname>"]
+excluded_buckets = ["bucketname"]
 
 # Email notification settings
-email_recipients = ["<email.address>"]
+email_recipients = ["email.address"]
 
 def send_email(subject, body, to_emails):
-    from_email = "<email.address>"
-    password = "<email.password>"
+    from_email = "email.address"
+    password = "email.password"
 
     msg = MIMEMultipart()
     msg['From'] = from_email
@@ -98,6 +98,7 @@ def main():
     # Send email with the results
     if results:
         email_body = "\n".join(results)
+         # Create a subject for the email 
         send_email("Public OSS Bucket found!!", email_body, email_recipients)
 
 if __name__ == "__main__":
