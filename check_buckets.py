@@ -7,8 +7,8 @@ from email.mime.multipart import MIMEMultipart
 
 # List of credentials for different environments
 credentials = [
-    {'access_key_id': '', 'access_key_secret': '', 'endpoint': 'oss-ap-southeast-3.aliyuncs.com'},
-    {'access_key_id': '', 'access_key_secret': '', 'endpoint': 'oss-ap-southeast-3.aliyuncs.com'},
+    {'access_key_id': '', 'access_key_secret': '', 'endpoint': ''},
+    {'access_key_id': '', 'access_key_secret': '', 'endpoint': ''},
     # Add more credentials as needed
 ]
 
