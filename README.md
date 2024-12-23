@@ -11,7 +11,9 @@ Installation
 2. Install the required libraries:
    pip3 install oss2 requests
 3. Update the necessary fields (credentials, excluded_buckets should you have any you want to exclude, and email address settings.
-4. Run the script: python check_buckets.py
+   Note: The credentialed accounts require to have AliyunOSSReadOnlyAccess to the buckets in that environment. The script uses Access Keys for authentication.
+         You can create a custom policy that only allows access from the IP of your resource to further lock down access and avoid unauthorized usage. 
+5. Run the script: python check_buckets.py
 
 Auto-execute/scheduling
 You can run this on maxcompute or on a schedule task on any servers you have.
