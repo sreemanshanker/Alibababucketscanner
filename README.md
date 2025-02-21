@@ -10,6 +10,7 @@ Installation
 1. Clone the repo
 2. Install the required libraries:
    pip3 install oss2 requests
+   
    Aliyun and ossutil
 4. Update the necessary fields (credentials, excluded_buckets should you have any you want to exclude, and email address settings.
    Note: The credentialed accounts require to have AliyunOSSReadOnlyAccess to the buckets in that environment. The script uses Access Keys for authentication.
