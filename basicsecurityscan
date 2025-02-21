@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# List all buckets
+buckets=$(ossutil ls | grep -oE 'oss://[a-zA-Z0-9-]+')
+total_buckets=0
+unencrypted_buckets=0
+insecure_buckets=0
+non_private_buckets=0
+public_buckets=0
+unencrypted_list=()
+insecure_list=()
+non_private_list=()
+public_list=()
+
+# Loop through each bucket and check its encryption status, HTTPS configuration, ACL, bucket policy status, and server-side encryption status
+for bucket in $buckets; do
+  total_buckets=$((total_buckets + 1))
+  bucket_name=$(echo $bucket | sed 's|oss://||')
+  
+  echo "Checking encryption status for bucket: $bucket_name..."
+  encryption_status=$(ossutil api get-bucket-encryption --bucket $bucket_name 2>&1)
+  if echo "$encryption_status" | grep -q "Message: The server side encryption configuration was not found" || echo "$encryption_status" | grep -q "Error Code: NoSuchServerSideEncryptionRule."; then
+    unencrypted_list+=("$bucket_name")
+    unencrypted_buckets=$((unencrypted_buckets + 1))
+  fi
+
+  echo "Checking HTTPS configuration for bucket: $bucket_name..."
+  https_status=$(ossutil api get-bucket-https-config --bucket $bucket_name 2>&1)
+  if ! echo "$https_status" | grep -q "<HttpsConfiguration><TLS><Enable>true</Enable>"; then
+    insecure_list+=("$bucket_name")
+    insecure_buckets=$((insecure_buckets + 1))
+  fi
+
+  echo "Checking ACL for bucket: $bucket_name..."
+  acl_status=$(ossutil api get-bucket-acl --bucket $bucket_name 2>&1)
+  if [ $? -ne 0 ]; then
+    echo "Error checking ACL for bucket: $bucket_name"
+    continue
+  fi
+  if ! echo "$acl_status" | grep -q "<Grant>private</Grant>"; then
+    non_private_list+=("$bucket_name")
+    non_private_buckets=$((non_private_buckets + 1))
+  fi
+
+  echo "Checking policy status for bucket: $bucket_name..."
+  policy_status=$(ossutil api get-bucket-policy-status --bucket $bucket_name 2>&1)
+  if echo "$policy_status" | grep -q "<IsPublic>true</IsPublic>"; then
+    public_list+=("$bucket_name")
+    public_buckets=$((public_buckets + 1))
+  fi
+done
+
+echo "Checks completed."
+echo "Total buckets scanned: $total_buckets"
+echo "Buckets without server-side encryption: $unencrypted_buckets"
+echo "Buckets without secure transfer (HTTPS) enabled: $insecure_buckets"
+echo "Buckets with non-private access: $non_private_buckets"
+echo "Buckets with public access: $public_buckets"
+
+# List buckets without encryption
+if [ $unencrypted_buckets -gt 0 ]; then
+  echo "Buckets without server-side encryption:"
+  for bucket in "${unencrypted_list[@]}"; do
+    echo "$bucket"
+  done
+else
+  echo "All buckets have server-side encryption configured."
+fi
+
+# List buckets without HTTPS enabled
+if [ $insecure_buckets -gt 0 ]; then
+  echo "Buckets without secure transfer (HTTPS) enabled:"
+  for bucket in "${insecure_list[@]}"; do
+    echo "$bucket"
+  done
+else
+  echo "All buckets have secure transfer (HTTPS) enabled."
+fi
+
+# List buckets with non-private access
+if [ $non_private_buckets -gt 0 ]; then
+  echo "Buckets with non-private access:"
+  for bucket in "${non_private_list[@]}"; do
+    echo "$bucket"
+  done
+else
+  echo "All buckets have private access."
+fi
+
+# List buckets with public access
+if [ $public_buckets -gt 0 ]; then
+  echo "Buckets with public access:"
+  for bucket in "${public_list[@]}"; do
+    echo "$bucket"
+  done
+else
+  echo "No buckets have public access."
+fi
